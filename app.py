@@ -1,13 +1,22 @@
 from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "myapplication123"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "lhanco@gmail.com"
+app.config["MAIL_PASSWORD"] = os.getenv("Python_App_Send_Email")
 
 db = SQLAlchemy(app)
+
+mail = Mail(app)
 
 
 class JobForm(db.Model):
@@ -31,9 +40,19 @@ def index():
             occupation = request.form["occupation"]
 
             job_form = JobForm(first_name=first_name, last_name=last_name, email=email,
-                               start_date=start_date, occupation=occupation)
+                               start_date=date_obj, occupation=occupation)
             db.session.add(job_form)
             db.session.commit()
+
+            message_body = f"Thank you for your submission, {first_name}. \n" \
+                           f"Here are your data: \n{first_name}\n{last_name}\n{start_date}\n" \
+                           f"Thank you!"
+            mail_message = Message(subject="New job form submission",
+                                   sender=app.config["MAIL_USERNAME"],
+                                   recipients=[email],
+                                   body=message_body)
+            mail.send(mail_message)
+
             flash(f"{first_name}, your form was submitted successfully!", category="success")
         except Exception as error:
             flash(f"{first_name}, your form was submitted failed!", category="danger")
