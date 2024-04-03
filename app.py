@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -22,17 +22,22 @@ class JobForm(db.Model):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        first_name = request.form["first_name"]
-        last_name = request.form["last_name"]
-        email = request.form["email"]
-        start_date = request.form["start_date"]
-        date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-        occupation = request.form["occupation"]
+        try:
+            first_name = request.form["first_name"]
+            last_name = request.form["last_name"]
+            email = request.form["email"]
+            start_date = request.form["start_date"]
+            date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            occupation = request.form["occupation"]
 
-        job_form = JobForm(first_name=first_name, last_name=last_name, email=email,
-                           start_date=date_obj, occupation=occupation)
-        db.session.add(job_form)
-        db.session.commit()
+            job_form = JobForm(first_name=first_name, last_name=last_name, email=email,
+                               start_date=start_date, occupation=occupation)
+            db.session.add(job_form)
+            db.session.commit()
+            flash(f"{first_name}, your form was submitted successfully!", category="success")
+        except Exception as error:
+            flash(f"{first_name}, your form was submitted failed!", category="danger")
+            flash(f"{str(error)}", category="danger")
 
     return render_template("index.html")
 
@@ -41,23 +46,3 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         app.run(debug=True, port=5001)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

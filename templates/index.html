@@ -44,6 +44,15 @@
                     </div>
                 </div>
                 <button class="btn btn-secondary mb-4" type="submit">Submit</button>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                                {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
             </form>
         </div>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
